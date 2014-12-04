@@ -1,4 +1,4 @@
-﻿/*
+/*
 ** 2003 September 6
 **
 ** The author disclaims copyright to this source code.  In place of
@@ -10,9 +10,11 @@
 **
 *************************************************************************
 ** This file contains code used for creating, destroying, and populating
-** a VDBE (or an "sqlite3_stmt" as it is known to the outside world.)  Prior
+** a VDBE虚拟数据库引擎 (or an "sqlite3_stmt" as it is known to the outside world.)  Prior
 ** to version 2.8.7, all this code was combined into the vdbe.c source file.
 ** But that file was getting too big so this subroutines were split out.
+此文件包含用于创建、 销毁、 和填充一个VDBE虚拟数据库引擎（或一个"sqlite3_stmt"由于它已经众所周知。）
+之前的 2.8.7版本，所有这些代码被组合成 vdbe.c 源的文件。但该文件变得太大了 ； 所以此子例程都拆分了。
 */
 #include "sqliteInt.h"
 #include "vdbeInt.h"
@@ -23,6 +25,7 @@
 ** When debugging the code generator in a symbolic debugger, one can
 ** set the sqlite3VdbeAddopTrace to 1 and all opcodes will be printed
 ** as they are added to the instruction stream.
+当调试代码生成器在一个符号调试器中，一个可以将 sqlite3VdbeAddopTrace 设置为 1和打印所有操作码当他们添加到指令流中时。
 */
 #ifdef SQLITE_DEBUG
 int sqlite3VdbeAddopTrace = 0;
@@ -30,7 +33,7 @@ int sqlite3VdbeAddopTrace = 0;
 
 
 /*
-** Create a new virtual database engine.
+** Create a new virtual database engine.创建一个新的虚拟数据库引擎
 */
 Vdbe *sqlite3VdbeCreate(sqlite3 *db){
   Vdbe *p;
@@ -46,9 +49,13 @@ Vdbe *sqlite3VdbeCreate(sqlite3 *db){
   p->magic = VDBE_MAGIC_INIT;
   return p;
 }
+/*
+上面的函数所描述的是：每个数据库连接中可能有多个活动的虚拟机，这些虚拟机被组织成一个双向链表，pPrev和pNext域分别指向链表中的前趋和后继。
+在sqlite3结构中有一个域pVdbe，为指向此双向链表的头指针。新创建的虚拟机插在该双向链表的头部。
+*/
 
 /*
-** Remember the SQL string for a prepared statement.
+** Remember the SQL string for a prepared statement.记住事先声明的SQL语句字符串
 */
 void sqlite3VdbeSetSql(Vdbe *p, const char *z, int n, int isPrepareV2){
   assert( isPrepareV2==1 || isPrepareV2==0 );
@@ -62,7 +69,8 @@ void sqlite3VdbeSetSql(Vdbe *p, const char *z, int n, int isPrepareV2){
 }
 
 /*
-** Return the SQL associated with a prepared statement
+** Return the SQL associated with a prepared statement返回与事先声明语句关联的 SQL
+返回结果集的列数
 */
 const char *sqlite3_sql(sqlite3_stmt *pStmt){
   Vdbe *p = (Vdbe *)pStmt;
@@ -71,6 +79,7 @@ const char *sqlite3_sql(sqlite3_stmt *pStmt){
 
 /*
 ** Swap all content between two VDBE structures.
+交换两个 VDBE 结构之间的所有内容。
 */
 void sqlite3VdbeSwap(Vdbe *pA, Vdbe *pB){
   Vdbe tmp, *pTmp;
@@ -92,7 +101,7 @@ void sqlite3VdbeSwap(Vdbe *pA, Vdbe *pB){
 
 #ifdef SQLITE_DEBUG
 /*
-** Turn tracing on or off
+** Turn tracing on or off 跟踪功能打开或关闭
 */
 void sqlite3VdbeTrace(Vdbe *p, FILE *trace){
   p->trace = trace;
@@ -101,12 +110,14 @@ void sqlite3VdbeTrace(Vdbe *p, FILE *trace){
 
 /*
 ** Resize the Vdbe.aOp array so that it is at least one op larger than 
-** it was.
+** it was.调整Vdbe.aOp数组的大小以至于它是比它大的至少一个 op 的 aOp 数组
 **
 ** If an out-of-memory error occurs while resizing the array, return
 ** SQLITE_NOMEM. In this case Vdbe.aOp and Vdbe.nOpAlloc remain 
 ** unchanged (this is so that any opcodes already allocated can be 
 ** correctly deallocated along with the rest of the Vdbe).
+如果发生内存不足的错误时调整数组的大小，返回 SQLITE_NOMEM。在这种情况下 Vdbe.aOp 和 Vdbe.nOpAlloc
+保持不变 （这样有利于任何代码已分配的操作码可以正确释放和剩下的 Vdbe）。
 */
 static int growOpArray(Vdbe *p){
   VdbeOp *pNew;
@@ -122,18 +133,22 @@ static int growOpArray(Vdbe *p){
 /*
 ** Add a new instruction to the list of instructions current in the
 ** VDBE.  Return the address of the new instruction.
+在VDBE中添加一个新的指令到当前列表中
+，返回新的指令的地址。
 **
-** Parameters:
+** Parameters://参数
 **
-**    p               Pointer to the VDBE
+**    p               Pointer to the VDBE//参数p用于指向VDBE
 **
-**    op              The opcode for this instruction
+**    op              The opcode for this instruction//参数op用于指向指令的操作码
 **
-**    p1, p2, p3      Operands
+**    p1, p2, p3      Operands//操作参数p1，p2，p3
 **
 ** Use the sqlite3VdbeResolveLabel() function to fix an address and
 ** the sqlite3VdbeChangeP4() function to change the value of the P4
 ** operand.
+使用 sqlite3VdbeResolveLabel() 函数功能来解决地址和
+sqlite3VdbeChangeP4() 函数功能来更改操作数p4的值。
 */
 int sqlite3VdbeAddOp3(Vdbe *p, int op, int p1, int p2, int p3){
   int i;
@@ -179,15 +194,16 @@ int sqlite3VdbeAddOp2(Vdbe *p, int op, int p1, int p2){
 
 /*
 ** Add an opcode that includes the p4 value as a pointer.
+添加一个包含 p4 值作为指针的操作码
 */
 int sqlite3VdbeAddOp4(
-  Vdbe *p,            /* Add the opcode to this VM */
-  int op,             /* The new opcode */
-  int p1,             /* The P1 operand */
-  int p2,             /* The P2 operand */
-  int p3,             /* The P3 operand */
-  const char *zP4,    /* The P4 operand */
-  int p4type          /* P4 operand type */
+  Vdbe *p,            /* Add the opcode to this VM 添加到这个虚拟机的操作码 */
+  int op,             /* The new opcode 定义一个新参数op */
+  int p1,             /* The P1 operand 操作数p1*/
+  int p2,             /* The P2 operand 操作数p2*/
+  int p3,             /* The P3 operand 操作数p3*/
+  const char *zP4,    /* The P4 operand 操作数p4*/
+  int p4type          /* P4 operand type P4 操作数类型为int型*/
 ){
   int addr = sqlite3VdbeAddOp3(p, op, p1, p2, p3);
   sqlite3VdbeChangeP4(p, addr, zP4, p4type);
@@ -198,9 +214,11 @@ int sqlite3VdbeAddOp4(
 ** Add an OP_ParseSchema opcode.  This routine is broken out from
 ** sqlite3VdbeAddOp4() since it needs to also needs to mark all btrees
 ** as having been used.
+添加 一个OP_ParseSchema 操作码。这个实例被解决是从它需要的 sqlite3VdbeAddOp4()到也需要标记被使用的所有 btree。
 **
 ** The zWhere string must have been obtained from sqlite3_malloc().
 ** This routine will take ownership of the allocated memory.
+ZWhere 字符串必须被 获得从 sqlite3_malloc()中。此例程将持有分配内存的所有权。
 */
 void sqlite3VdbeAddParseSchemaOp(Vdbe *p, int iDb, char *zWhere){
   int j;
@@ -211,14 +229,15 @@ void sqlite3VdbeAddParseSchemaOp(Vdbe *p, int iDb, char *zWhere){
 
 /*
 ** Add an opcode that includes the p4 value as an integer.
+添加一个包含 p4 值为整数的操作码
 */
 int sqlite3VdbeAddOp4Int(
-  Vdbe *p,            /* Add the opcode to this VM */
-  int op,             /* The new opcode */
-  int p1,             /* The P1 operand */
-  int p2,             /* The P2 operand */
-  int p3,             /* The P3 operand */
-  int p4              /* The P4 operand as an integer */
+  Vdbe *p,            /* Add the opcode to this VM 指向虚拟机的操作码p*/
+  int op,             /* The new opcode 定义一个新参数op*/
+  int p1,             /* The P1 operand 操作数p1*/
+  int p2,             /* The P2 operand 操作数p2*/
+  int p3,             /* The P3 operand 操作数p3*/
+  int p4              /* The P4 operand as an integer 操作数p4作为一个整数*/
 ){
   int addr = sqlite3VdbeAddOp3(p, op, p1, p2, p3);
   sqlite3VdbeChangeP4(p, addr, SQLITE_INT_TO_PTR(p4), P4_INT32);
@@ -232,12 +251,17 @@ int sqlite3VdbeAddOp4Int(
 ** the label is resolved to a specific address, the VDBE will scan
 ** through its operation list and change all values of P2 which match
 ** the label into the resolved address.
+创建一个还没有被编码的新的符号标签的指令，这个符号标签只是仅仅表示一个负数
+这个标签可以被用作操作的 P2 值。然后，当标签解析为一个特定的地址，VDBE 将通过其操作列表扫描并更改 P2 的所有值
+与之匹配标签的解决地址。
 **
 ** The VDBE knows that a P2 value is a label because labels are
 ** always negative and P2 values are suppose to be non-negative.
 ** Hence, a negative P2 value is a label that has yet to be resolved.
+VDBE 知道 P2 值是一个标签，因为标签总是负数，P2 值是假设为非负数。
+因此，一个负的 P2 值是一个尚未解决的标签。
 **
-** Zero is returned if a malloc() fails.
+** Zero is returned if a malloc() fails.如果函数malloc () 出现错误则返回零。
 */
 int sqlite3VdbeMakeLabel(Vdbe *p){
   int i = p->nLabel++;
@@ -256,6 +280,8 @@ int sqlite3VdbeMakeLabel(Vdbe *p){
 ** Resolve label "x" to be the address of the next instruction to
 ** be inserted.  The parameter "x" must have been obtained from
 ** a prior call to sqlite3VdbeMakeLabel().
+解决标签“x”给下一条指令的地址插入。参数“x”必须被获得从
+之前调用的函数sqlite3VdbeMakeLabel()中。
 */
 void sqlite3VdbeResolveLabel(Vdbe *p, int x){
   int j = -1-x;
@@ -268,17 +294,20 @@ void sqlite3VdbeResolveLabel(Vdbe *p, int x){
 
 /*
 ** Mark the VDBE as one that can only be run one time.
+标志VDBE并且只能运行一次。
 */
 void sqlite3VdbeRunOnlyOnce(Vdbe *p){
   p->runOnlyOnce = 1;
 }
 
-#ifdef SQLITE_DEBUG /* sqlite3AssertMayAbort() logic */
+#ifdef SQLITE_DEBUG /* sqlite3AssertMayAbort() logic */ //sqlite3AssertMayAbort()逻辑函数
 
 /*
 ** The following type and function are used to iterate through all opcodes
 ** in a Vdbe main program and each of the sub-programs (triggers) it may 
 ** invoke directly or indirectly. It should be used as follows:
+下面的类型和函数是用来遍历所有操作码在Vdbe主程序和各子程序(触发器)它可能被
+直接或间接地调用。它应该使用如下:
 **
 **   Op *pOp;
 **   VdbeOpIter sIter;
@@ -293,11 +322,11 @@ void sqlite3VdbeRunOnlyOnce(Vdbe *p){
 */
 typedef struct VdbeOpIter VdbeOpIter;
 struct VdbeOpIter {
-  Vdbe *v;                   /* Vdbe to iterate through the opcodes of */
-  SubProgram **apSub;        /* Array of subprograms */
-  int nSub;                  /* Number of entries in apSub */
-  int iAddr;                 /* Address of next instruction to return */
-  int iSub;                  /* 0 = main program, 1 = first sub-program etc. */
+  Vdbe *v;                   /* Vdbe to iterate through the opcodes of  Vdbe遍历操作码 */ 
+  SubProgram **apSub;        /* Array of subprograms 子程序数组 */
+  int nSub;                  /* Number of entries in apSub apSub的条目数量 */
+  int iAddr;                 /* Address of next instruction to return  下一个指令的地址返回*/
+  int iSub;                  /* 0 = main program, 1 = first sub-program etc. 0表示 主程序，1表示第一个子程序*/
 };
 static Op *opIterNext(VdbeOpIter *p){
   Vdbe *v = p->v;
@@ -348,6 +377,8 @@ static Op *opIterNext(VdbeOpIter *p){
 ** throw an ABORT exception (causing the statement, but not entire transaction
 ** to be rolled back). This condition is true if the main program or any
 ** sub-programs contains any of the following:
+检查是否存储在虚拟机中与 pParse 相关联的程序可能发生异常的中止 （导致语句，但不是整个事务被回滚）。
+这个条件是如果主程序或任何小组的程序包含下列任一操作：
 **
 **   *  OP_Halt with P1=SQLITE_CONSTRAINT and P2=OE_Abort.
 **   *  OP_HaltIfNull with P1=SQLITE_CONSTRAINT and P2=OE_Abort.
@@ -360,6 +391,8 @@ static Op *opIterNext(VdbeOpIter *p){
 ** ABORT may be thrown, or false otherwise. Return true if it does
 ** match, or false otherwise. This function is intended to be used as
 ** part of an assert statement in the compiler. Similar to:
+然后检查分析的值。如果中止可能抛出则mayAbort是true，否则为false。如果是匹配，则返回 true
+否则为false。此函数被打算用于作为在编译器中 assert 语句的一部分。类似于：
 **
 **   assert( sqlite3VdbeAssertMayAbort(pParse->pVdbe, pParse->mayAbort) );
 */
@@ -389,7 +422,10 @@ int sqlite3VdbeAssertMayAbort(Vdbe *v, int mayAbort){
   ** If malloc failed, then the while() loop above may not have iterated
   ** through all opcodes and hasAbort may be set incorrectly. Return
   ** true for this case to prevent the assert() in the callers frame
-  ** from failing.  */
+  ** from failing.  
+如果hasAbort = = mayAbort返回true，或者malloc产生失败。如果malloc失败,然后上面的 while() 循环可能不具有
+遍历所有操作码和 hasAbort 可能设置不正确。这种情况下防止断言返回true()的调用者从失败的框架。
+ */
   return ( v->db->mallocFailed || hasAbort==mayAbort );
 }
 #endif /* SQLITE_DEBUG - the sqlite3AssertMayAbort() function */
@@ -398,14 +434,18 @@ int sqlite3VdbeAssertMayAbort(Vdbe *v, int mayAbort){
 ** Loop through the program looking for P2 values that are negative
 ** on jump instructions.  Each such value is a label.  Resolve the
 ** label by setting the P2 value to its correct non-zero value.
+循环遍历程序寻找 P2 值，这个值在跳转指令上是负的。每一个这样的值是一个标签。
+通过设置对其正确的 P2 值非零值解决标签。
 **
-** This routine is called once after all opcodes have been inserted.
+** This routine is called once after all opcodes have been inserted.调用这个例程一旦所有的操作码被插入后。
 **
 ** Variable *pMaxFuncArgs is set to the maximum value of any P2 argument 
 ** to an OP_Function, OP_AggStep or OP_VFilter opcode. This is used by 
 ** sqlite3VdbeMakeReady() to size the Vdbe.apArg[] array.
+变量* pMaxFuncArgs 设置为传递给 OP_Function、 OP_AggStep 或 OP_VFilter 操作码任何 P2 参数的最大值。这使用的 sqlite3VdbeMakeReady() 到大小
+Vdbe.apArg[] 数组。
 **
-** The Op.opflags field is set on all opcodes.
+** The Op.opflags field is set on all opcodes.//在所有操作码设置Op.opflags 字段.
 */
 static void resolveP2Values(Vdbe *p, int *pMaxFuncArgs){
   int i;
@@ -451,7 +491,7 @@ static void resolveP2Values(Vdbe *p, int *pMaxFuncArgs){
 }
 
 /*
-** Return the address of the next instruction to be inserted.
+** Return the address of the next instruction to be inserted.//返回插入下一条指令的地址。
 */
 int sqlite3VdbeCurrentAddr(Vdbe *p){
   assert( p->magic==VDBE_MAGIC_INIT );
@@ -463,17 +503,21 @@ int sqlite3VdbeCurrentAddr(Vdbe *p){
 ** the Vdbe passed as the first argument. It is the callers responsibility
 ** to arrange for the returned array to be eventually freed using the 
 ** vdbeFreeOpArray() function.
+这个函数返回一个指向数组的指针操作码与Vdbe相关联作为第一个参数传递。这是
+调用者负责安排返回的数组最终使用vdbeFreeOpArray释放()函数。
 **
 ** Before returning, *pnOp is set to the number of entries in the returned
 ** array. Also, *pnMaxArg is set to the larger of its current value and 
 ** the number of entries in the Vdbe.apArg[] array required to execute the 
 ** returned program.
+在返回之前,* pnOp在返回数组中被设置为条目的数量。同时,* pnMaxArg设置为更大的
+当前值和在Vdbe.apArg[]数组中条目的数量要求必须执行返回的项目
 */
 VdbeOp *sqlite3VdbeTakeOpArray(Vdbe *p, int *pnOp, int *pnMaxArg){
   VdbeOp *aOp = p->aOp;
   assert( aOp && !p->db->mallocFailed );
 
-  /* Check that sqlite3VdbeUsesBtree() was not called on this VM */
+/* Check that sqlite3VdbeUsesBtree() was not called on this VM 检查sqlite3VdbeUsesBtree()并不参与在这个VM*/
   assert( p->btreeMask==0 );
 
   resolveP2Values(p, pnMaxArg);
@@ -481,7 +525,6 @@ VdbeOp *sqlite3VdbeTakeOpArray(Vdbe *p, int *pnOp, int *pnMaxArg){
   p->aOp = 0;
   return aOp;
 }
-
 /*
 ** Add a whole list of operations to the operation stack.  Return the
 ** address of the first operation added.
